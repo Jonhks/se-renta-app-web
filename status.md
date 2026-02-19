@@ -47,18 +47,21 @@ Pero el foco es el buscador.
 # 4. Stack Tecnológico (Congelado para MVP)
 
 Frontend:
+
 - Next.js (App Router)
 - TailwindCSS
 - React Query
 - Leaflet + OpenStreetMap
 
 Backend:
+
 - Firebase
 - Firestore
 - Firebase Storage
 - Firebase Auth (Google Only)
 
 Hosting:
+
 - Vercel
 
 ---
@@ -69,18 +72,18 @@ Estructura actual:
 
 se-renta/
 ├─ app/
-│   ├─ layout.tsx
-│   ├─ page.tsx
-│   ├─ globals.css
+│ ├─ layout.tsx
+│ ├─ page.tsx
+│ ├─ globals.css
 ├─ components/
-│   ├─ Map.tsx
-│   ├─ LeafletMap.tsx
+│ ├─ Map.tsx
+│ ├─ LeafletMap.tsx
 ├─ lib/
 ├─ public/
 ├─ status.md
 
-
 Regla:
+
 - UI reusable va en `components/`
 - Lógica Firebase va en `lib/`
 - Rutas van en `app/`
@@ -90,9 +93,11 @@ Regla:
 # 6. Autenticación (MVP)
 
 Solo:
+
 - Google Auth
 
 No:
+
 - Email/password
 - Recuperación
 - Registro manual
@@ -154,7 +159,7 @@ Reglas:
 
 +1 → Confirmación disponible  
 -2 → Posible fraude  
--5 → Fraude confirmado  
+-5 → Fraude confirmado
 
 Si `fraudVotes >= 3` → reporte oculto automáticamente.
 
@@ -175,16 +180,19 @@ isAdmin: boolean
 }
 
 ### Gana reputación cuando:
+
 - Crea reportes confirmados.
 - Marca fraude que luego es confirmado.
 - Tiene reportes activos sin conflicto.
 
 ### Pierde reputación cuando:
+
 - Publica reportes marcados fraude.
 - Acumula votos negativos.
 - Publica spam.
 
 ### Restricción automática:
+
 Si reputationScore < -5 → no puede publicar.
 
 ---
@@ -197,6 +205,7 @@ Modelo híbrido:
 - Panel admin básico accesible solo si `isAdmin = true`.
 
 Funciones futuras del panel:
+
 - Ver reportes marcados fraude.
 - Banear usuario.
 - Restringir usuario.
@@ -218,38 +227,45 @@ Funciones futuras del panel:
 # 13. Roadmap Técnico Paso a Paso
 
 FASE 1 — Base (Hecho parcialmente)
+
 - Next setup
 - Tailwind
 - Leaflet funcionando
 - Botón ubicación
 
 FASE 2 — Autenticación
+
 - Configurar Firebase
 - Google Auth
 - Crear documento user al login
 
 FASE 3 — Crear Report
+
 - Formulario básico
 - Guardar en Firestore
 - Subir imagen a Storage
 - Set expiresAt automático
 
 FASE 4 — Mostrar Reports
+
 - Query Firestore
 - Renderizar markers dinámicos
 - Mostrar popup con info
 
 FASE 5 — Confirmaciones
+
 - Botón confirmar disponible
 - Botón posible fraude
 - Botón fraude confirmado
 
 FASE 6 — Reputación
+
 - Actualizar reputationScore
 - Bloquear publicación si negativo
 - Extender duración si confiable
 
 FASE 7 — Panel Admin Básico
+
 - Ruta protegida
 - Lista usuarios
 - Cambiar status manual
@@ -299,3 +315,11 @@ Google Auth.
 
 No avanzar a reportes antes de login.
 
+extras a considerar
+
+Después podemos hacer:
+• Si tiene foto → score inicial +1
+• Si tiene teléfono → +0.5
+• Si tiene descripción detallada → +0.5
+
+Pero eso es etapa 2.
