@@ -1,16 +1,39 @@
-# SE RENTA
+Amo cómo está tomando forma esto.
+Hoy sí fue día productivo de verdad.
 
-## 0. Estado del Proyecto
+Te dejo el status.md actualizado, incorporando TODO lo que ya hicimos y lo que definimos hoy.
 
-Proyecto en fase MVP.
-Objetivo: validar rápido y resolver el problema real de encontrar departamentos en renta confiables.
+Puedes reemplazar tu archivo completo por esto 👇
+
+⸻
+
+SE RENTA
+
+0. Estado del Proyecto
+
+Proyecto en fase MVP real.
+
+Objetivo:
+Validar rápido y resolver el problema real de encontrar departamentos en renta confiables.
 
 No estamos construyendo la app perfecta.
 Estamos construyendo la versión que prueba si esto funciona.
 
----
+Hoy ya tenemos:
+• Autenticación funcional
+• Creación de reportes
+• Renderizado en mapa
+• Sistema base de reputación
+• Estados de usuario
+• Pins personalizados negros
+• Selección manual de ubicación
 
-# 1. Visión
+Ya no es idea.
+Ya es producto funcional.
+
+⸻
+
+1. Visión
 
 SE RENTA es un mapa comunitario en tiempo real que ayuda a personas que están buscando departamento en renta a encontrar opciones reales, activas y validadas por la comunidad.
 
@@ -18,108 +41,121 @@ No es un portal inmobiliario.
 No es un marketplace tradicional.
 Es una capa comunitaria enfocada en confianza y reducción de fraude.
 
----
+⸻
 
-# 2. Problema
+2. Problema
 
 Buscar departamento es caótico:
-
-- Fraude frecuente
-- Información desactualizada
-- Letreros físicos que no aparecen en internet
-- Grupos desordenados
-- Publicaciones falsas
+• Fraude frecuente
+• Información desactualizada
+• Letreros físicos que no aparecen en internet
+• Grupos desordenados
+• Publicaciones falsas
 
 No existe una herramienta enfocada 100% en quien busca renta con validación comunitaria.
 
----
+⸻
 
-# 3. Enfoque
+3. Enfoque
 
 Primero resolver:
+
 🔍 Para quien busca depa.
 
 La comunidad ayuda.
 Pero el foco es el buscador.
 
----
+⸻
 
-# 4. Stack Tecnológico (Congelado para MVP)
+4. Stack Tecnológico (Congelado para MVP)
 
 Frontend:
-
-- Next.js (App Router)
-- TailwindCSS
-- React Query
-- Leaflet + OpenStreetMap
+• Next.js (App Router)
+• TailwindCSS
+• Leaflet + OpenStreetMap
+• React Context (Auth)
+• React Toastify
 
 Backend:
-
-- Firebase
-- Firestore
-- Firebase Storage
-- Firebase Auth (Google Only)
+• Firebase
+• Firestore
+• Firebase Auth (Google Only)
+• Firebase Storage (pendiente integrar)
 
 Hosting:
+• Vercel
 
-- Vercel
+⸻
 
----
+5. Estructura de Proyecto
+   se-renta/
+   ├─ app/
+   │ ├─ layout.tsx
+   │ ├─ page.tsx
+   │ ├─ globals.css
+   ├─ components/
+   │ ├─ LeafletMap.tsx
+   │ ├─ CreateReportButton.tsx
+   │ ├─ CreateReportModal.tsx
+   │ ├─ ConfirmDialog.tsx
+   ├─ lib/
+   │ ├─ firebase.ts
+   │ ├─ AuthContext.tsx
+   ├─ public/
+   ├─ status.md
 
-# 5. Estructura de Proyecto
+Reglas:
+• UI reusable → components/
+• Firebase logic → lib/
+• Rutas → app/
+• No mezclar lógica de negocio con UI visual
+• Todo cambio debe indicar archivo exacto
 
-Estructura actual:
+⸻
 
-se-renta/
-├─ app/
-│ ├─ layout.tsx
-│ ├─ page.tsx
-│ ├─ globals.css
-├─ components/
-│ ├─ Map.tsx
-│ ├─ LeafletMap.tsx
-├─ lib/
-├─ public/
-├─ status.md
-
-Regla:
-
-- UI reusable va en `components/`
-- Lógica Firebase va en `lib/`
-- Rutas van en `app/`
-
----
-
-# 6. Autenticación (MVP)
+6. Autenticación (YA IMPLEMENTADA)
 
 Solo:
+• Google Auth
 
-- Google Auth
+Implementado:
+• Login con popup
+• Creación automática de documento en users
+• Actualización de lastLogin
+• Estado visible en header
+• Logout con dialog bonito (no window.confirm)
 
-No:
+Estados de usuario:
+• active
+• restricted
+• banned
 
-- Email/password
-- Recuperación
-- Registro manual
+Visual:
+• Usuario ve su nombre
+• Ve su reputación ⭐
+• Si banned → “Cuenta suspendida”
+• Botón salir siempre visible
 
-Razón:
-Reducir fricción y cuentas falsas.
+⸻
 
----
+7. Geolocalización
 
-# 7. Geolocalización
+Actual:
+• Mapa inicia en CDMX
+• Botón “Usar mi ubicación”
+• Al crear reporte:
+• Si no hay ubicación → solicita permiso automáticamente
+• Puede ajustar ubicación manualmente
+• Puede seleccionar ubicación tocando el mapa
+• Al seleccionar punto → se abre modal automáticamente
 
-- El mapa inicia centrado en CDMX.
-- Botón manual: “Usar mi ubicación”.
-- No se pide permiso automáticamente.
-- Centra mapa y dibuja marcador.
-- UX sin fricción.
+Esto es UX fuerte y correcta.
 
----
+⸻
 
-# 8. Sistema de Reportes
+8. Sistema de Reportes (Implementado Base)
 
-Collection: `reports`
+Collection: reports
 
 {
 id,
@@ -129,45 +165,59 @@ location: { lat, lng },
 price,
 phone,
 description,
-images[],
-status: “active” | “inactive” | “expired”,
-confirmations,
-possibleFraudVotes,
-fraudVotes,
+imageUrl,
+status: "active",
+confirmations: 0,
+possibleFraudVotes: 0,
+fraudVotes: 0,
 expiresAt
 }
 
----
+## ⸻
 
-# 9. Auto-Expiración
+Reglas actuales:
+• Debe tener al menos:
+• precio OR
+• descripción OR
+• foto OR
+• teléfono válido (10 dígitos)
+• Teléfono validado
+• Expiración automática a 14 días
+• Usuario confiable (futuro) → 20 días
 
-- Reporte normal: 14 días.
-- Usuario confiable: 20 días.
-- Confirmaciones pueden extender duración.
-- Si `expiresAt < now` → no se muestra.
+⸻
 
-Objetivo:
-Mapa limpio y confiable.
+9. Renderizado en Mapa (YA IMPLEMENTADO)
+   • Query Firestore:
+   • status == active
+   • expiresAt > now
+   • Index requerido en Firestore (ya creado)
+   • Pins personalizados negros (no azul Leaflet)
+   • Popup muestra:
+   • precio
+   • descripción
+   • teléfono
+   • confirmaciones
 
----
+⸻
 
-# 10. Sistema de Confianza
+10. Sistema de Confianza
 
-## Score del Reporte
+Score del Reporte
 
-Reglas:
+Reglas definidas (a implementar):
 
-+1 → Confirmación disponible  
--2 → Posible fraude  
++1 → Confirmación
+-2 → Posible fraude
 -5 → Fraude confirmado
 
-Si `fraudVotes >= 3` → reporte oculto automáticamente.
+Si fraudVotes >= 3 → reporte oculto automáticamente.
 
----
+⸻
 
-## Reputación del Usuario
+Reputación del Usuario
 
-Collection: `users`
+Collection: users
 
 {
 id,
@@ -175,151 +225,137 @@ displayName,
 email,
 reputationScore,
 contributionsCount,
-status: “active” | “restricted” | “banned”,
-isAdmin: boolean
+status: "active" | "restricted" | "banned",
+isAdmin,
+createdAt,
+lastLogin
 }
 
-### Gana reputación cuando:
+Restricciones actuales:
+• restricted → botón visible pero no funcional
+• banned → botón visible pero muestra 🚫
 
-- Crea reportes confirmados.
-- Marca fraude que luego es confirmado.
-- Tiene reportes activos sin conflicto.
+Regla futura:
+Si reputationScore < -5 → bloquear publicación automática.
 
-### Pierde reputación cuando:
+⸻
 
-- Publica reportes marcados fraude.
-- Acumula votos negativos.
-- Publica spam.
-
-### Restricción automática:
-
-Si reputationScore < -5 → no puede publicar.
-
----
-
-# 11. Moderación
+11. Moderación
 
 Modelo híbrido:
 
-- Sistema comunitario automático.
-- Panel admin básico accesible solo si `isAdmin = true`.
+Sistema comunitario automático + panel admin básico.
 
-Funciones futuras del panel:
+Futuro:
+• Ruta protegida /admin
+• Lista usuarios
+• Cambiar status
+• Reactivar reporte
+• Banear cuentas
 
-- Ver reportes marcados fraude.
-- Banear usuario.
-- Restringir usuario.
-- Reactivar reporte.
+⸻
 
----
+12. UX Implementada Hoy
+    • FAB circular minimalista
+    • Estados visuales según usuario
+    • Modal moderno
+    • Validaciones inteligentes
+    • Toasts claros
+    • Ajuste manual de ubicación
+    • Apertura automática del modal al elegir punto
 
-# 12. Lo que NO es el MVP
+Producto ya se siente serio.
 
-- Chat interno
-- Sistema de pagos
-- Ranking público global
-- Medallas
-- Gamificación
-- Perfil editable complejo
+⸻
 
----
+13. Roadmap Actualizado
 
-# 13. Roadmap Técnico Paso a Paso
+FASE 1 — Base ✅
+• Next setup
+• Tailwind
+• Leaflet
+• Ubicación
+• Autenticación
+• Crear reporte
+• Mostrar reportes
 
-FASE 1 — Base (Hecho parcialmente)
+FASE 2 — Confianza Visible 1. Implementar confirmaciones en popup 2. Implementar posible fraude 3. Implementar fraude confirmado 4. Cambiar color de pin según estado 5. Recalcular reputationScore
 
-- Next setup
-- Tailwind
-- Leaflet funcionando
-- Botón ubicación
+FASE 3 — Storage
+• Subir imagen a Firebase Storage
+• Guardar imageUrl real
+• Mostrar imagen en popup
 
-FASE 2 — Autenticación
+FASE 4 — Auto-Extensión
+• Confirmaciones extienden expiresAt
+• Usuario confiable obtiene +6 días automáticos
 
-- Configurar Firebase
-- Google Auth
-- Crear documento user al login
+FASE 5 — Panel Admin Básico
+• Ruta protegida
+• Lista usuarios
+• Cambiar status
+• Ban manual
 
-FASE 3 — Crear Report
+⸻
 
-- Formulario básico
-- Guardar en Firestore
-- Subir imagen a Storage
-- Set expiresAt automático
+14. Reglas de Código
 
-FASE 4 — Mostrar Reports
+Siempre indicar:
+• Archivo exacto
+• Ruta
+• Qué reemplazar
+• Qué agregar
+• Qué borrar
 
-- Query Firestore
-- Renderizar markers dinámicos
-- Mostrar popup con info
+No tocar múltiples archivos sin claridad.
+No duplicar lógica.
 
-FASE 5 — Confirmaciones
+⸻
 
-- Botón confirmar disponible
-- Botón posible fraude
-- Botón fraude confirmado
+15. Métricas Clave
+    • Reportes creados por semana
+    • Confirmaciones por reporte
+    • Votos fraude
+    • Usuarios activos
+    • Reportes expirados
+    • Tiempo promedio activo de un reporte
 
-FASE 6 — Reputación
+⸻
 
-- Actualizar reputationScore
-- Bloquear publicación si negativo
-- Extender duración si confiable
+16. Objetivo Real
 
-FASE 7 — Panel Admin Básico
-
-- Ruta protegida
-- Lista usuarios
-- Cambiar status manual
-
----
-
-# 14. Reglas de Código
-
-- Todo código nuevo debe indicar:
-  - Archivo exacto
-  - Ruta
-  - Qué reemplazar
-  - Qué agregar
-- No modificar múltiples archivos sin indicarlo claramente.
-- No duplicar lógica en componentes.
-
----
-
-# 15. Métricas Clave
-
-- Reportes creados por semana
-- Confirmaciones por reporte
-- Tasa de fraude detectado
-- Usuarios activos
-- Reportes expirados vs activos
-
----
-
-# 16. Objetivo Real
-
-Validar que:
-
-- Personas sí usan el mapa.
-- Sí reportan.
-- Sí confirman.
-- Sí ayuda a reducir fraude.
+Validar:
+• Que sí lo usen
+• Que sí reporten
+• Que sí confirmen
+• Que reduzca fraude
+• Que el mapa se mantenga limpio
 
 Si eso pasa → escalar.
 Si no pasa → ajustar o matar.
 
----
+Sin apego emocional.
 
-# 17. Próximo Paso
+⸻
+
+17. Próximo Paso Real
 
 Implementar:
-Google Auth.
 
-No avanzar a reportes antes de login.
+👉 Confirmaciones dentro del popup
+👉 Botón “Disponible”
+👉 Botón “Posible fraude”
+👉 Botón “Fraude confirmado”
 
-extras a considerar
+Y recalcular score dinámico.
 
-Después podemos hacer:
-• Si tiene foto → score inicial +1
-• Si tiene teléfono → +0.5
-• Si tiene descripción detallada → +0.5
+Eso ya convierte esto en sistema comunitario real.
 
-Pero eso es etapa 2.
+⸻
+
+18. Extras Futuros (Etapa 2)
+    • Si tiene foto → score inicial +1
+    • Si tiene teléfono → +0.5
+    • Si descripción > 50 caracteres → +0.5
+    • Halo especial para reportes confiables
+    • Pin verde / amarillo / rojo según score
