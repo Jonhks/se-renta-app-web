@@ -15,6 +15,25 @@ import CreateReportButton from "./CreateReportButton";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import CreateReportModal from "./CreateReportModal";
+import VoteButtons from "./VoteButtons";
+import { toast } from "react-toastify";
+
+interface Report {
+  id: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  price?: string | null;
+  phone?: string | null;
+  description?: string | null;
+  confirmations: number;
+  possibleFraudVotes: number;
+  fraudVotes: number;
+  inactiveVotes?: number;
+  status: string;
+  expiresAt: string;
+}
 
 function RecenterMap({ position }: { position: [number, number] | null }) {
   const map = useMap();
@@ -41,6 +60,15 @@ function MapClickHandler({
   const map = useMap();
 
   useEffect(() => {
+    const container = map.getContainer();
+
+    // Cambiar cursor dinámicamente
+    if (selectingLocation) {
+      container.style.cursor = "crosshair";
+    } else {
+      container.style.cursor = "";
+    }
+
     if (!selectingLocation) return;
 
     const handleClick = (e: any) => {
@@ -54,16 +82,39 @@ function MapClickHandler({
 
     return () => {
       map.off("click", handleClick);
+      container.style.cursor = "";
     };
   }, [selectingLocation, map, setPosition, setSelectingLocation, setOpenModal]);
   return null;
 }
 
+function getDominant(report: Report) {
+  if ((report.fraudVotes ?? 0) >= 3) return "fraud";
+  if ((report.inactiveVotes ?? 0) >= 2) return "inactive";
+
+  const max = Math.max(
+    report.confirmations ?? 0,
+    report.possibleFraudVotes ?? 0,
+    report.fraudVotes ?? 0,
+    report.inactiveVotes ?? 0,
+  );
+
+  if (max === (report.confirmations ?? 0)) return "confirm";
+  if (max === (report.possibleFraudVotes ?? 0)) return "possible";
+  if (max === (report.inactiveVotes ?? 0)) return "inactive";
+  if (max === (report.fraudVotes ?? 0)) return "fraud";
+
+  return "neutral";
+}
+
 export default function LeafletMap() {
   const [position, setPosition] = useState<[number, number] | null>(null);
-  const [reports, setReports] = useState<any[]>([]);
+  const [reports, setReports] = useState<Report[]>([]);
   const [selectingLocation, setSelectingLocation] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [previousInactiveVotes, setPreviousInactiveVotes] = useState<
+    Record<string, number>
+  >({});
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -92,9 +143,24 @@ export default function LeafletMap() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
+      // 🔥 Detectar SOLO cambios reales
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "modified") {
+          const data = change.doc.data() as Report;
+          const inactiveVotes = data.inactiveVotes ?? 0;
+
+          if (inactiveVotes === 2) {
+            toast.info(
+              "Este reporte fue marcado como probablemente no disponible",
+            );
+          }
+        }
+      });
+
+      // 🔥 Actualizar lista completa
+      const data: Report[] = snapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        ...(doc.data() as Omit<Report, "id">),
       }));
 
       setReports(data);
@@ -119,13 +185,72 @@ export default function LeafletMap() {
     iconSize: [16, 16],
   });
 
+  const GrayIcon = L.divIcon({
+    html: `
+    <div style="
+      width: 16px;
+      height: 16px;
+      background: #6b7280;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px #6b7280;
+    "></div>
+  `,
+    className: "",
+    iconSize: [16, 16],
+  });
+  const GreenIcon = L.divIcon({
+    html: `
+    <div style="
+      width: 16px;
+      height: 16px;
+      background: #16a34a;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px #16a34a;
+    "></div>
+  `,
+    className: "",
+    iconSize: [16, 16],
+  });
+
+  const YellowIcon = L.divIcon({
+    html: `
+    <div style="
+      width: 16px;
+      height: 16px;
+      background: #eab308;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px #eab308;
+    "></div>
+  `,
+    className: "",
+    iconSize: [16, 16],
+  });
+
+  const RedIcon = L.divIcon({
+    html: `
+    <div style="
+      width: 16px;
+      height: 16px;
+      background: #dc2626;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px #dc2626;
+    "></div>
+  `,
+    className: "",
+    iconSize: [16, 16],
+  });
+
   return (
     <div className="relative w-full h-full">
       <MapContainer
         center={[19.4326, -99.1332]}
         zoom={12}
         scrollWheelZoom
-        className="w-full h-full"
+        className={`w-full h-full`}
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
@@ -144,31 +269,53 @@ export default function LeafletMap() {
             />
           </>
         )}
-        {reports.map((report) => (
-          <Marker
-            key={report.id}
-            position={[report.location.lat, report.location.lng]}
-            icon={BlackIcon}
-          >
-            <Popup>
-              <div className="flex flex-col gap-1 text-sm">
-                {report.price && (
-                  <div className="font-semibold">{report.price}</div>
-                )}
 
-                {report.description && <div>{report.description}</div>}
+        {reports.map((report) => {
+          const dominant = getDominant(report);
+          return (
+            <Marker
+              key={report.id}
+              position={[report.location.lat, report.location.lng]}
+              icon={
+                dominant === "fraud"
+                  ? RedIcon
+                  : dominant === "inactive"
+                    ? GrayIcon
+                    : dominant === "confirm"
+                      ? GreenIcon
+                      : dominant === "possible"
+                        ? YellowIcon
+                        : BlackIcon
+              }
+            >
+              <Popup>
+                <div className="flex flex-col gap-1 text-sm">
+                  {report.price && (
+                    <div className="font-semibold">{report.price}</div>
+                  )}
 
-                {report.phone && (
-                  <div className="text-blue-600">📞 {report.phone}</div>
-                )}
+                  {report.description && <div>{report.description}</div>}
 
-                <div className="text-xs text-gray-400">
-                  Confirmaciones: {report.confirmations}
+                  {report.phone && (
+                    <div className="text-blue-600">📞 {report.phone}</div>
+                  )}
+
+                  <div className="mt-3 flex flex-col gap-2">
+                    <VoteButtons
+                      reportId={report.id}
+                      counts={{
+                        confirmations: report.confirmations ?? 0,
+                        inactiveVotes: report.inactiveVotes ?? 0,
+                        possibleFraudVotes: report.possibleFraudVotes ?? 0,
+                        fraudVotes: report.fraudVotes ?? 0,
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+              </Popup>
+            </Marker>
+          );
+        })}
         <MapClickHandler
           selectingLocation={selectingLocation}
           setPosition={setPosition}
@@ -198,6 +345,11 @@ export default function LeafletMap() {
           setSelectingLocation(true);
         }}
       />
+      {selectingLocation && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[6000] bg-black text-white px-4 py-2 rounded-lg shadow-lg text-sm">
+          Haz clic en el mapa para colocar el reporte
+        </div>
+      )}
     </div>
   );
 }

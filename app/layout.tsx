@@ -5,6 +5,9 @@ import AuthButton from "@/components/AuthButton";
 import { AuthProvider } from "@/lib/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AppInitializer from "@/components/AppInitializer";
+// import SplashScreen from "@/components/SplashScreen";
+// import { useAuth } from "@/lib/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,16 +33,18 @@ export default function RootLayout({
     <html lang="en">
       <body className="h-screen flex flex-col">
         <AuthProvider>
-          <ToastContainer
-            position="top-right"
-            theme="dark"
-          />
-          <header className="flex items-center justify-between px-6 py-4 border-b">
-            <h1 className="text-lg font-bold tracking-wide">SE RENTA</h1>
-            <AuthButton />
-          </header>
+          <AppInitializer>
+            <ToastContainer
+              position="top-right"
+              theme="dark"
+            />
+            <header className="flex items-center justify-between px-6 py-4 border-b">
+              <h1 className="text-lg font-bold tracking-wide">SE RENTA</h1>
+              <AuthButton />
+            </header>
 
-          <main className="flex-1">{children}</main>
+            <main className="flex-1">{children}</main>
+          </AppInitializer>
         </AuthProvider>
       </body>
     </html>
