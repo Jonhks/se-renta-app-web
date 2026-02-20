@@ -35,7 +35,7 @@ export default function RootLayout({
         <AuthProvider>
           <AppInitializer>
             <ToastContainer
-              position="top-right"
+              position="bottom-right"
               theme="dark"
             />
             <header className="flex items-center justify-between px-6 py-4 border-b">

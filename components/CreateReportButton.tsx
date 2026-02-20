@@ -51,7 +51,16 @@ export default function CreateReportButton({
         (pos) => {
           const { latitude, longitude } = pos.coords;
           setPosition([latitude, longitude]);
-          setOpenModal(true);
+
+          if (user && status === "active") {
+            setOpenModal(true);
+          } else if (!user) {
+            toast.warning("Inicia sesión para reportar");
+          } else if (status === "restricted") {
+            toast.error("Tu cuenta está restringida");
+          } else if (status === "banned") {
+            toast.error("Cuenta suspendida");
+          }
         },
         () => {
           toast.warning("Necesitamos tu ubicación para crear el reporte");
