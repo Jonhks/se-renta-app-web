@@ -17,6 +17,7 @@ import { db } from "@/lib/firebase";
 import CreateReportModal from "./CreateReportModal";
 import VoteButtons from "./VoteButtons";
 import { toast } from "react-toastify";
+import { useAuth } from "@/lib/AuthContext";
 
 interface Report {
   id: string;
@@ -33,11 +34,11 @@ interface Report {
   inactiveVotes?: number;
   status: string;
   expiresAt: string;
+  createdBy: string;
 }
 
 function RecenterMap({ position }: { position: [number, number] | null }) {
   const map = useMap();
-
   useEffect(() => {
     if (position) {
       map.setView(position, 16);
@@ -115,6 +116,9 @@ export default function LeafletMap() {
   const [previousInactiveVotes, setPreviousInactiveVotes] = useState<
     Record<string, number>
   >({});
+  const [editingReport, setEditingReport] = useState<Report | null>(null);
+
+  const { user } = useAuth();
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -289,16 +293,32 @@ export default function LeafletMap() {
               }
             >
               <Popup>
+                {user && report.createdBy === user.uid && (
+                  <div className="w-full flex justify-end">
+                    <button
+                      onClick={() => {
+                        setEditingReport(report);
+                        setOpenModal(true);
+                      }}
+                      className="mt-2 px-3 py-1 bg-transparent text-white rounded text-xs hover:cursor-pointer hover:opacity-100"
+                    >
+                      ✏️ Editar
+                    </button>
+                  </div>
+                )}
                 <div className="flex flex-col gap-1 text-sm">
-                  {report.price && (
-                    <div className="font-semibold">{report.price}</div>
-                  )}
-
-                  {report.description && <div>{report.description}</div>}
-
                   {report.phone && (
-                    <div className="text-blue-600">📞 {report.phone}</div>
+                    <a
+                      href={`tel:${report.phone}`}
+                      className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-black hover:bg-gray-800 transition-colors text-white rounded-lg text-sm font-medium no-underline"
+                    >
+                      📞 Llamar {report.phone}
+                    </a>
                   )}
+                  {report.price && (
+                    <div className="font-semibold">Renta: {report.price}</div>
+                  )}
+                  {report.description && <div>{report.description}</div>}
 
                   <div className="mt-3 flex flex-col gap-2">
                     <VoteButtons
@@ -337,13 +357,19 @@ export default function LeafletMap() {
       />
       <CreateReportModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={() => {
+          setOpenModal(false);
+          setEditingReport(null);
+        }}
         latitude={position ? position[0] : null}
         longitude={position ? position[1] : null}
         onAdjustLocation={() => {
           setOpenModal(false);
           setSelectingLocation(true);
         }}
+        mode={editingReport ? "edit" : "create"}
+        reportData={editingReport || undefined}
+        reportId={editingReport?.id}
       />
       {selectingLocation && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[6000] bg-black text-white px-4 py-2 rounded-lg shadow-lg text-sm">

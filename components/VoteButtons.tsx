@@ -71,7 +71,7 @@ export default function VoteButtons({
         px-2 py-1 rounded transition-all
         text-white
         ${baseColors[color]}
-        ${isDominant ? "ring-2 ring-white scale-[1.02]" : "opacity-70"}
+        ${isDominant ? "ring-2 ring-white scale-[1.02]" : "opacity-70 hover:cursor-pointer hover:opacity-100"}
       `}
       >
         <span>

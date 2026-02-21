@@ -90,26 +90,37 @@ export default function CreateReportButton({
 
   return (
     <>
-      <button
-        onClick={handleClick}
-        className={`fixed bottom-6 left-6 z-[5000] w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transition-all cursor-pointer
-        ${
-          isActive
-            ? "bg-black text-white hover:bg-gray-800"
-            : "bg-gray-300 text-gray-600 hover:bg-gray-400"
-        }`}
-        title={
-          isActive
-            ? "Crear reporte"
-            : isGuest
-              ? "Inicia sesión para reportar"
-              : isRestricted
-                ? "Tu cuenta está restringida"
-                : "Cuenta suspendida"
-        }
-      >
-        {label}
-      </button>
+      <div className="fixed bottom-6 left-6 z-[5000] flex items-center gap-4">
+        <button
+          onClick={handleClick}
+          className={`w-14 h-14 rounded-full flex shrink-0 items-center justify-center text-2xl shadow-lg transition-all cursor-pointer
+          ${
+            isActive
+              ? "bg-black text-white hover:bg-gray-800"
+              : "bg-gray-300 text-gray-600 hover:bg-gray-400"
+          }`}
+          title={
+            isActive
+              ? "Crear reporte"
+              : isGuest
+                ? "Inicia sesión para reportar"
+                : isRestricted
+                  ? "Tu cuenta está restringida"
+                  : "Cuenta suspendida"
+          }
+        >
+          {label}
+        </button>
+        {(isActive || isGuest) && (
+          <div
+            onClick={handleClick}
+            className="relative bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl cursor-pointer whitespace-nowrap animate-bounce select-none"
+          >
+            Crea tu reporte aquí ✨
+            <div className="absolute top-1/2 -left-1.5 w-3 h-3 bg-gray-900 transform -translate-y-1/2 rotate-45 rounded-sm"></div>
+          </div>
+        )}
+      </div>
       {/* <CreateReportModal
         // open={openModal}
         onClose={() => setOpenModal(false)}

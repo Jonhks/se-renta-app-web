@@ -1,10 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { addDoc, collection } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "react-toastify";
+
+interface Report {
+  id: string;
+  price?: string | null;
+  phone?: string | null;
+  description?: string | null;
+}
 
 interface Props {
   open: boolean;
@@ -12,6 +19,9 @@ interface Props {
   latitude: number | null;
   longitude: number | null;
   onAdjustLocation: () => void;
+  mode?: "create" | "edit";
+  reportData?: Report;
+  reportId?: string;
 }
 
 const formatPrice = (value: string) => {
@@ -28,6 +38,9 @@ export default function CreateReportModal({
   latitude,
   longitude,
   onAdjustLocation,
+  mode = "create",
+  reportData,
+  reportId,
 }: Props) {
   const [price, setPrice] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,13 +50,50 @@ export default function CreateReportModal({
 
   const { user } = useAuth();
 
+  // 🔥 Precargar datos si es edición
+  useEffect(() => {
+    if (mode === "edit" && reportData) {
+      setPrice(reportData.price || "");
+      setDescription(reportData.description || "");
+      setPhone(reportData.phone || "");
+    }
+  }, [mode, reportData]);
+
   const handleSubmit = async () => {
+    const hasValidPhone = phone.trim() !== "" && phone.length === 10;
+
+    const isValid =
+      price.trim() !== "" ||
+      description.trim() !== "" ||
+      image !== null ||
+      hasValidPhone;
+
     if (!isValid) {
       toast.warning("Agrega al menos precio, teléfono, descripción o foto");
       return;
     }
 
-    // Validar teléfono solo si se ha ingresado algo
+    // 🔥 MODO EDICIÓN
+    if (mode === "edit" && reportId) {
+      try {
+        await updateDoc(doc(db, "reports", reportId), {
+          price: price || null,
+          description: description || null,
+          phone: phone || null,
+          updatedAt: new Date().toISOString(),
+        });
+
+        toast.success("Reporte actualizado");
+        onClose();
+        return;
+      } catch (error) {
+        console.error(error);
+        toast.error("Error al actualizar reporte");
+        return;
+      }
+    }
+
+    // 🔥 Validar teléfono solo si se ha ingresado algo
     if (phone.trim() !== "" && phone.length !== 10) {
       toast.error("Se necesita un teléfono válido (10 dígitos)");
       return;
@@ -74,6 +124,7 @@ export default function CreateReportModal({
         confirmations: 0,
         possibleFraudVotes: 0,
         fraudVotes: 0,
+        inactiveVotes: 0,
         expiresAt: expires.toISOString(),
       });
 
@@ -106,9 +157,10 @@ export default function CreateReportModal({
     <div className="fixed inset-0 z-[6000] flex items-center justify-center bg-black/50">
       <div className="bg-white w-[95%] max-w-md rounded-xl p-6 shadow-xl">
         <h2 className="text-lg text-gray-700 font-semibold mb-4">
-          Nuevo reporte
+          {mode === "edit" ? "Editar reporte" : "Nuevo reporte"}
         </h2>
-        {latitude && longitude && (
+
+        {latitude && longitude && mode === "create" && (
           <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-100">
             <div className="flex items-center text-center gap-2 text-sm text-gray-700">
               <span>📍</span>
@@ -120,13 +172,17 @@ export default function CreateReportModal({
             </div>
           </div>
         )}
-        <button
-          onClick={onAdjustLocation}
-          className="text-xs text-blue-600 hover:underline mt-2"
-        >
-          Ajustar ubicación en el mapa
-        </button>
-        <div className="flex flex-col gap-3">
+
+        {mode === "create" && (
+          <button
+            onClick={onAdjustLocation}
+            className="text-xs text-blue-600 hover:underline mt-2"
+          >
+            Ajustar ubicación en el mapa
+          </button>
+        )}
+
+        <div className="flex flex-col gap-3 mt-3">
           <div className="relative flex items-center">
             <input
               type="text"
@@ -181,72 +237,6 @@ export default function CreateReportModal({
             onChange={(e) => setDescription(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-gray-800 transition-all min-h-[100px] font-light"
           />
-
-          <div className="flex flex-col gap-2">
-            <label className="text-sm text-gray-700 font-medium">
-              Foto del letrero
-            </label>
-
-            <div
-              onClick={() => document.getElementById("file-input")?.click()}
-              className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all
-                ${
-                  image
-                    ? "border-green-200 bg-green-50/30"
-                    : "border-gray-200 hover:border-gray-400 hover:bg-gray-50"
-                }`}
-            >
-              <input
-                id="file-input"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    setImage(e.target.files[0]);
-                  }
-                }}
-                className="hidden"
-              />
-
-              {image ? (
-                <div className="relative w-full flex flex-col items-center gap-2">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt="Preview"
-                    className="w-full h-32 object-cover rounded-lg shadow-sm"
-                  />
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-green-600 font-medium">
-                      ✓ Imagen lista
-                    </span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImage(null);
-                      }}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                      (Quitar)
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center text-xl">
-                    📸
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 font-medium">
-                      Haz clic para subir foto
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Aumenta la confianza del reporte
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
@@ -262,7 +252,7 @@ export default function CreateReportModal({
             disabled={!isValid}
             className="px-4 py-2 rounded-lg bg-black text-white border border-transparent hover:bg-gray-800 transition-all cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
-            Publicar
+            {mode === "edit" ? "Guardar cambios" : "Publicar"}
           </button>
         </div>
       </div>

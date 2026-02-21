@@ -25,3 +25,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Leaflet Popup - Tema oscuro */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #111 !important;
+  color: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-tip {
+  background: #111 !important;
+}
+
+.leaflet-popup-close-button {
+  color: #999 !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #fff !important;
+}
+
+.leaflet-popup-content a {
+  color: inherit !important;
+}
