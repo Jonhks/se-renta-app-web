@@ -96,8 +96,10 @@ export default function CreateReportButton({
           className={`w-14 h-14 rounded-full flex shrink-0 items-center justify-center text-2xl shadow-lg transition-all cursor-pointer
           ${
             isActive
-              ? "bg-black text-white hover:bg-gray-800"
-              : "bg-gray-300 text-gray-600 hover:bg-gray-400"
+              ? "bg-green-600 text-white hover:bg-green-700"
+              : user && status === "active"
+                ? "bg-green-900/100 text-white hover:bg-green-800"
+                : "bg-gray-300 text-gray-600 hover:bg-gray-400"
           }`}
           title={
             isActive
