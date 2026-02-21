@@ -15,6 +15,7 @@ export default function AuthButton() {
   const [openDialog, setOpenDialog] = useState(false);
   const [reputation, setReputation] = useState<number>(0);
   const [status, setStatus] = useState<string>("active");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -25,10 +26,13 @@ export default function AuthButton() {
       if (snap.exists()) {
         const data = snap.data();
         setReputation(data.reputationScore ?? 0);
-        console.log(data);
-
         setStatus(data.status ?? "active");
       }
+    });
+
+    // Verificar admin claim
+    user.getIdTokenResult().then((token) => {
+      setIsAdmin(token.claims.admin === true);
     });
 
     return () => unsubscribe();
@@ -69,6 +73,14 @@ export default function AuthButton() {
     return (
       <>
         <div className="flex items-center gap-4">
+          {isAdmin && (
+            <a
+              href="/admin"
+              className="bg-black text-white px-3 py-1 rounded transition-colors hover:bg-gray-800 cursor-pointer text-sm font-medium"
+            >
+              Admin
+            </a>
+          )}
           <div className="flex flex-col items-center">
             <span className="text-sm font-medium">{user.displayName}</span>
             <span
