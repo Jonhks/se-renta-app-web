@@ -173,80 +173,24 @@ export default function LeafletMap() {
     return () => unsubscribe();
   }, []);
 
-  // Fix icono default
-  const BlackIcon = L.divIcon({
-    html: `
-    <div style="
-      width: 16px;
-      height: 16px;
-      background: black;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 2px black;
-    "></div>
-  `,
-    className: "",
-    iconSize: [16, 16],
-  });
+  // Helper para crear icono de casita SVG con color
+  const houseIcon = (color: string) =>
+    L.divIcon({
+      html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" style="filter: drop-shadow(0 1px 3px rgba(0,0,0,.4))">
+        <path d="M16 3 L3 14 L7 14 L7 28 L25 28 L25 14 L29 14 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
+        <rect x="13" y="18" width="6" height="10" rx="1" fill="white" opacity="0.85"/>
+      </svg>`,
+      className: "",
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -28],
+    });
 
-  const GrayIcon = L.divIcon({
-    html: `
-    <div style="
-      width: 16px;
-      height: 16px;
-      background: #6b7280;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 2px #6b7280;
-    "></div>
-  `,
-    className: "",
-    iconSize: [16, 16],
-  });
-  const GreenIcon = L.divIcon({
-    html: `
-    <div style="
-      width: 16px;
-      height: 16px;
-      background: #16a34a;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 2px #16a34a;
-    "></div>
-  `,
-    className: "",
-    iconSize: [16, 16],
-  });
-
-  const YellowIcon = L.divIcon({
-    html: `
-    <div style="
-      width: 16px;
-      height: 16px;
-      background: #eab308;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 2px #eab308;
-    "></div>
-  `,
-    className: "",
-    iconSize: [16, 16],
-  });
-
-  const RedIcon = L.divIcon({
-    html: `
-    <div style="
-      width: 16px;
-      height: 16px;
-      background: #dc2626;
-      border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 0 0 2px #dc2626;
-    "></div>
-  `,
-    className: "",
-    iconSize: [16, 16],
-  });
+  const BlackIcon = houseIcon("#111");
+  const GrayIcon = houseIcon("#6b7280");
+  const GreenIcon = houseIcon("#16a34a");
+  const YellowIcon = houseIcon("#eab308");
+  const RedIcon = houseIcon("#dc2626");
 
   return (
     <div className="relative w-full h-full">
