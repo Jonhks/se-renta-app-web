@@ -5,12 +5,16 @@ import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "react-toastify";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 interface Report {
   id: string;
   price?: string | null;
   phone?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
+  creatorPhotoUrl?: string | null;
 }
 
 interface Props {
@@ -46,7 +50,9 @@ export default function CreateReportModal({
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { user } = useAuth();
 
@@ -104,6 +110,23 @@ export default function CreateReportModal({
       return;
     }
 
+    setIsUploading(true);
+
+    let uploadedImageUrl = null;
+
+    if (image && mode === "create") {
+      try {
+        const imageRef = ref(storage, `reports/${Date.now()}-${user.uid}`);
+        await uploadBytes(imageRef, image);
+        uploadedImageUrl = await getDownloadURL(imageRef);
+      } catch (uploadError) {
+        console.error("Error al subir imagen:", uploadError);
+        toast.warning(
+          "No se pudo guardar la imagen (Firebase Storage sin configurar). El reporte se publicará sin foto.",
+        );
+      }
+    }
+
     try {
       const now = new Date();
       const expires = new Date();
@@ -112,6 +135,7 @@ export default function CreateReportModal({
       await addDoc(collection(db, "reports"), {
         createdAt: now.toISOString(),
         createdBy: user.uid,
+        creatorPhotoUrl: user.photoURL || null,
         location: {
           lat: latitude,
           lng: longitude,
@@ -119,7 +143,7 @@ export default function CreateReportModal({
         price: price || null,
         phone: phone || null,
         description: description || null,
-        imageUrl: null,
+        imageUrl: uploadedImageUrl,
         status: "active",
         confirmations: 0,
         possibleFraudVotes: 0,
@@ -137,9 +161,12 @@ export default function CreateReportModal({
       setPhone("");
       setDescription("");
       setImage(null);
+      setImagePreview(null);
     } catch (error) {
       console.error(error);
       toast.error("Error al publicar reporte");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -237,6 +264,51 @@ export default function CreateReportModal({
             onChange={(e) => setDescription(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-2 text-gray-700 outline-none focus:border-gray-800 transition-all min-h-[100px] font-light"
           />
+
+          {mode === "create" && (
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-600 font-medium">
+                Foto (opcional)
+              </label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImage(file);
+                      setImagePreview(URL.createObjectURL(file));
+                    }
+                  }}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-gray-50 file:text-black
+                    hover:file:bg-gray-100 cursor-pointer"
+                />
+              </div>
+              {imagePreview && (
+                <div className="relative mt-2 w-full h-32 rounded-lg overflow-hidden border border-gray-200 group">
+                  <img
+                    src={imagePreview}
+                    alt="Vista previa"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => {
+                      setImage(null);
+                      setImagePreview(null);
+                    }}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
@@ -249,10 +321,14 @@ export default function CreateReportModal({
 
           <button
             onClick={handleSubmit}
-            disabled={!isValid}
+            disabled={!isValid || isUploading}
             className="px-4 py-2 rounded-lg bg-black text-white border border-transparent hover:bg-gray-800 transition-all cursor-pointer disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
-            {mode === "edit" ? "Guardar cambios" : "Publicar"}
+            {isUploading
+              ? "Publicando..."
+              : mode === "edit"
+                ? "Guardar cambios"
+                : "Publicar"}
           </button>
         </div>
       </div>

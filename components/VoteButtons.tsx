@@ -1,9 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "react-toastify";
-import { doc, updateDoc, increment, getDoc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  increment,
+  getDoc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+} from "firebase/firestore";
 
 type VoteType = "confirm" | "possible" | "fraud" | "inactive";
 
@@ -21,6 +30,22 @@ export default function VoteButtons({
 }) {
   const { user } = useAuth();
   const dominant = getDominant(counts);
+  const [activeVote, setActiveVote] = useState<VoteType | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const voteRef = doc(db, "reports", reportId, "votes", user.uid);
+    const unsubscribe = onSnapshot(voteRef, (snap) => {
+      if (snap.exists()) {
+        setActiveVote(snap.data().voteType as VoteType);
+      } else {
+        setActiveVote(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user, reportId]);
 
   function getDominant(counts: any) {
     if (counts.fraudVotes >= 3) return "fraud";
@@ -47,6 +72,7 @@ export default function VoteButtons({
     color,
     count,
     isDominant,
+    isActive,
     onClick,
   }: {
     label: string;
@@ -54,6 +80,7 @@ export default function VoteButtons({
     color: "green" | "gray" | "yellow" | "red";
     count: number;
     isDominant: boolean;
+    isActive: boolean;
     onClick: () => void;
   }) {
     const baseColors = {
@@ -71,11 +98,12 @@ export default function VoteButtons({
         px-2 py-1 rounded transition-all
         text-white
         ${baseColors[color]}
-        ${isDominant ? "ring-2 ring-white scale-[1.02]" : "opacity-70 hover:cursor-pointer hover:opacity-100"}
+        ${isActive ? "ring-2 ring-white scale-[1.03] shadow-lg opacity-100 font-bold" : "opacity-75 hover:cursor-pointer hover:opacity-100"}
+        ${isDominant && !isActive ? "ring-1 ring-white/50" : ""}
       `}
       >
         <span>
-          {icon} {label}
+          {icon} {label} {isActive && "✓"}
         </span>
         <span className="font-semibold">{count ?? 0}</span>
       </button>
@@ -92,35 +120,31 @@ export default function VoteButtons({
       const reportRef = doc(db, "reports", reportId);
       const voteRef = doc(db, "reports", reportId, "votes", user.uid);
 
-      const voteSnap = await getDoc(voteRef);
-
-      let previousType: VoteType | null = null;
-
-      if (voteSnap.exists()) {
-        previousType = voteSnap.data().voteType;
-      }
-
-      // 🔒 Si ya votó lo mismo → no hacer nada
-      if (previousType === type) {
-        toast.info("Ya votaste esta opción");
+      // Si hacer clic en el mismo voto -> Toggle (quitar voto)
+      if (activeVote === type) {
+        await deleteDoc(voteRef);
+        await updateDoc(reportRef, {
+          [mapVoteToField(type)]: increment(-1),
+        });
+        toast.info("Voto removido");
         return;
       }
 
-      // 🔥 Si tenía voto anterior → restar contador anterior
-      if (previousType) {
+      // Si tenía otro voto anterior -> lo cambiamos
+      if (activeVote) {
         await updateDoc(reportRef, {
-          [mapVoteToField(previousType)]: increment(-1),
+          [mapVoteToField(activeVote)]: increment(-1),
         });
       }
 
-      // 🔥 Guardar / actualizar voto del usuario
+      // Guardar el nuevo voto
       await setDoc(voteRef, {
         userId: user.uid,
         voteType: type,
         updatedAt: new Date().toISOString(),
       });
 
-      // 🔥 Incrementar nuevo contador
+      // Incrementar nuevo contador
       await updateDoc(reportRef, {
         [mapVoteToField(type)]: increment(1),
       });
@@ -140,6 +164,7 @@ export default function VoteButtons({
         color="green"
         count={counts.confirmations}
         isDominant={dominant === "confirm"}
+        isActive={activeVote === "confirm"}
         onClick={() => handleVote("confirm")}
       />
 
@@ -149,6 +174,7 @@ export default function VoteButtons({
         color="gray"
         count={counts.inactiveVotes}
         isDominant={dominant === "inactive"}
+        isActive={activeVote === "inactive"}
         onClick={() => handleVote("inactive")}
       />
 
@@ -158,6 +184,7 @@ export default function VoteButtons({
         color="yellow"
         count={counts.possibleFraudVotes}
         isDominant={dominant === "possible"}
+        isActive={activeVote === "possible"}
         onClick={() => handleVote("possible")}
       />
 
@@ -167,6 +194,7 @@ export default function VoteButtons({
         color="red"
         count={counts.fraudVotes}
         isDominant={dominant === "fraud"}
+        isActive={activeVote === "fraud"}
         onClick={() => handleVote("fraud")}
       />
     </div>

@@ -28,6 +28,9 @@ interface Report {
   price?: string | null;
   phone?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
+  creatorPhotoUrl?: string | null;
+  createdAt: string;
   confirmations: number;
   possibleFraudVotes: number;
   fraudVotes: number;
@@ -143,7 +146,8 @@ export default function LeafletMap() {
     const q = query(
       collection(db, "reports"),
       where("status", "==", "active"),
-      where("expiresAt", ">", now),
+      // Removido expiresAt de la query para evitar problemas de indices faltantes
+      // Se filtrará en cliente para garantizar que sean visibles universalmente.
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -161,11 +165,13 @@ export default function LeafletMap() {
         }
       });
 
-      // 🔥 Actualizar lista completa
-      const data: Report[] = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Omit<Report, "id">),
-      }));
+      // 🔥 Actualizar lista completa con validación de fecha en memoria local
+      const data: Report[] = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as Omit<Report, "id">),
+        }))
+        .filter((report) => report.expiresAt > now);
 
       setReports(data);
     });
@@ -220,6 +226,23 @@ export default function LeafletMap() {
 
         {reports.map((report) => {
           const dominant = getDominant(report);
+
+          // Calcular días restantes y formato de fecha
+          const createdDate = new Date(report.createdAt);
+          const formattedDate = createdDate.toLocaleDateString("es-MX", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+          const expiresDate = new Date(report.expiresAt);
+          const daysRemaining = Math.max(
+            0,
+            Math.ceil(
+              (expiresDate.getTime() - new Date().getTime()) /
+                (1000 * 3600 * 24),
+            ),
+          );
+
           return (
             <Marker
               key={report.id}
@@ -236,44 +259,93 @@ export default function LeafletMap() {
                         : BlackIcon
               }
             >
-              <Popup>
-                {user && report.createdBy === user.uid && (
-                  <div className="w-full flex justify-end">
-                    <button
-                      onClick={() => {
-                        setEditingReport(report);
-                        setOpenModal(true);
-                      }}
-                      className="mt-2 px-3 py-1 bg-transparent text-white rounded text-xs hover:cursor-pointer hover:opacity-100"
-                    >
-                      ✏️ Editar
-                    </button>
-                  </div>
-                )}
-                <div className="flex flex-col gap-1 text-sm">
-                  {report.phone && (
-                    <a
-                      href={`tel:${report.phone}`}
-                      className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-black hover:bg-gray-800 transition-colors text-white rounded-lg text-sm font-medium no-underline"
-                    >
-                      📞 Llamar {report.phone}
-                    </a>
-                  )}
-                  {report.price && (
-                    <div className="font-semibold">Renta: {report.price}</div>
-                  )}
-                  {report.description && <div>{report.description}</div>}
+              <Popup className="se-renta-popup">
+                <div className="w-full relative">
+                  {/* Header: Avatar + Título/Opciones */}
+                  <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                    <div className="flex items-center gap-2">
+                      {report.creatorPhotoUrl ? (
+                        <img
+                          src={report.creatorPhotoUrl}
+                          alt="creador"
+                          className="w-6 h-6 rounded-full border border-gray-200 object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] text-gray-500 font-bold border border-gray-300">
+                          👤
+                        </div>
+                      )}
+                      <span className="text-xs text-gray-500 font-medium">
+                        Publicado el {formattedDate}
+                      </span>
+                    </div>
 
-                  <div className="mt-3 flex flex-col gap-2">
-                    <VoteButtons
-                      reportId={report.id}
-                      counts={{
-                        confirmations: report.confirmations ?? 0,
-                        inactiveVotes: report.inactiveVotes ?? 0,
-                        possibleFraudVotes: report.possibleFraudVotes ?? 0,
-                        fraudVotes: report.fraudVotes ?? 0,
-                      }}
-                    />
+                    {user && report.createdBy === user.uid && (
+                      <button
+                        onClick={() => {
+                          setEditingReport(report);
+                          setOpenModal(true);
+                        }}
+                        className="p-1 bg-gray-100 text-gray-600 hover:bg-black hover:text-white rounded transition-colors text-xs"
+                        title="Editar"
+                      >
+                        ✏️
+                      </button>
+                    )}
+                  </div>
+
+                  {report.imageUrl && (
+                    <div className="w-full h-32 mb-3 bg-gray-100 rounded-md overflow-hidden border border-gray-200">
+                      <img
+                        src={report.imageUrl}
+                        alt="Lugar"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-1.5 text-sm">
+                    {report.phone && (
+                      <a
+                        href={`tel:${report.phone}`}
+                        className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-black hover:bg-gray-800 transition-colors !text-white rounded-lg text-sm font-medium no-underline"
+                      >
+                        📞 Llamar {report.phone}
+                      </a>
+                    )}
+                    {report.price && (
+                      <div className="font-semibold text-gray-800 bg-gray-50 py-1.5 px-2 rounded border border-gray-100">
+                        Renta:{" "}
+                        <span className="text-black">{report.price}</span>
+                      </div>
+                    )}
+                    {report.description && (
+                      <div className="text-gray-600 text-xs mt-1 leading-relaxed border-l-2 border-gray-200 pl-2 py-1">
+                        {report.description}
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex flex-col gap-2">
+                      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-gray-400 font-bold border-b border-gray-100 pb-1 mb-1">
+                        <span>Validación Comunitaria</span>
+                        <span
+                          className={daysRemaining <= 3 ? "text-red-500" : ""}
+                        >
+                          ⏱ {daysRemaining}{" "}
+                          {daysRemaining === 1 ? "día" : "días"} activo
+                        </span>
+                      </div>
+                      <VoteButtons
+                        reportId={report.id}
+                        counts={{
+                          confirmations: report.confirmations ?? 0,
+                          inactiveVotes: report.inactiveVotes ?? 0,
+                          possibleFraudVotes: report.possibleFraudVotes ?? 0,
+                          fraudVotes: report.fraudVotes ?? 0,
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
               </Popup>

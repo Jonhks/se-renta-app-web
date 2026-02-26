@@ -1,13 +1,12 @@
 "use client";
 
-import { auth } from "@/lib/firebase";
+import { usePathname } from "next/navigation";
+import { auth, db } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { doc, onSnapshot } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { useEffect } from "react";
 import { toast } from "react-toastify";
 
 export default function AuthButton() {
@@ -16,6 +15,7 @@ export default function AuthButton() {
   const [reputation, setReputation] = useState<number>(0);
   const [status, setStatus] = useState<string>("active");
   const [isAdmin, setIsAdmin] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!user) return;
@@ -75,14 +75,28 @@ export default function AuthButton() {
         <div className="flex items-center gap-4">
           {isAdmin && (
             <a
-              href="/admin"
+              href={pathname === "/admin" ? "/" : "/admin"}
               className="bg-black text-white px-3 py-1 rounded transition-colors hover:bg-gray-800 cursor-pointer text-sm font-medium"
             >
-              Admin
+              {pathname === "/admin" ? "Mapa" : "Admin"}
             </a>
           )}
-          <div className="flex flex-col items-center">
-            <span className="text-sm font-medium">{user.displayName}</span>
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="Avatar"
+              className="w-10 h-10 rounded-full border-2 border-transparent shadow-sm"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg shadow-sm border border-gray-300">
+              👤
+            </div>
+          )}
+          <div className="flex flex-col items-start pr-2">
+            <span className="text-sm font-medium line-clamp-1">
+              {user.displayName}
+            </span>
             <span
               className={`text-xs flex items-center gap-1 ${
                 status === "banned"
@@ -104,7 +118,7 @@ export default function AuthButton() {
           </div>
           <button
             onClick={() => setOpenDialog(true)}
-            className="bg-black text-white px-3 py-1 rounded transition-colors hover:bg-gray-800 cursor-pointer"
+            className="bg-black text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-gray-800 cursor-pointer text-sm font-medium hidden md:block"
           >
             Salir
           </button>
