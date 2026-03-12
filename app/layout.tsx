@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import AuthButton from "@/components/AuthButton";
 import { AuthProvider } from "@/lib/AuthContext";
+import { ThemeProvider } from "@/lib/ThemeContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppInitializer from "@/components/AppInitializer";
-// import SplashScreen from "@/components/SplashScreen";
-// import { useAuth } from "@/lib/AuthContext";
+import { SeRentaLogo } from "@/components/SeRentaIcon";
+import ThemeToggle from "@/components/ThemeToggle";
+import AppFooter from "@/components/AppFooter";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
   title: "Se Renta",
   description: "Encuentra tu próximo hogar",
+  icons: {
+    icon: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
@@ -30,22 +31,43 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html
+      lang="es"
+      className={inter.variable}
+    >
       <body className="h-screen flex flex-col">
-        <AuthProvider>
-          <AppInitializer>
-            <ToastContainer
-              position="bottom-right"
-              theme="dark"
-            />
-            <header className="flex items-center justify-between px-6 py-4 border-b">
-              <h1 className="text-lg font-bold tracking-wide">SE RENTA</h1>
-              <AuthButton />
-            </header>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppInitializer>
+              <ToastContainer
+                position="bottom-right"
+                theme="dark"
+              />
+              <header
+                className="flex items-center justify-between px-6 py-3 border-b"
+                style={{
+                  backgroundColor: "var(--header-bg)",
+                  borderColor: "var(--header-border)",
+                }}
+              >
+                <a
+                  href="/"
+                  className="se-renta-logo-wrapper"
+                >
+                  <SeRentaLogo size={36} />
+                </a>
+                <div className="flex items-center gap-3">
+                  {/* Toggle visible en desktop */}
+                  <ThemeToggle className="hidden md:flex" />
+                  <AuthButton />
+                </div>
+              </header>
 
-            <main className="flex-1">{children}</main>
-          </AppInitializer>
-        </AuthProvider>
+              <main className="flex-1">{children}</main>
+              <AppFooter />
+            </AppInitializer>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

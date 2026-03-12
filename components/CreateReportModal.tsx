@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  updateDoc,
+  doc,
+  increment,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/lib/AuthContext";
 import { toast } from "react-toastify";
@@ -153,6 +159,13 @@ export default function CreateReportModal({
       });
 
       toast.success("Reporte publicado");
+
+      // 🔥 Actualizar perfil del usuario (Contribuciones y Estrellas)
+      const userProfileRef = doc(db, "users", user.uid);
+      await updateDoc(userProfileRef, {
+        contributionsCount: increment(1),
+        reputationScore: increment(1),
+      });
 
       onClose();
 

@@ -52,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 id: u.uid,
                 displayName: u.displayName,
                 email: u.email,
+                photoURL: u.photoURL || null,
                 reputationScore: 0,
                 contributionsCount: 0,
                 status: "active",
@@ -64,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 {
                   displayName: u.displayName,
                   email: u.email,
+                  photoURL: u.photoURL || null,
                   lastLogin: new Date().toISOString(),
                 },
                 { merge: true },

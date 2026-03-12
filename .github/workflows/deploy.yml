@@ -1,0 +1,42 @@
+name: Deploy & Bump Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Bump patch version
+        run: |
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          npm version patch --no-git-tag-version
+          VERSION=$(node -p "require('./package.json').version")
+          git add package.json
+          git commit -m "chore: bump version to v$VERSION [skip ci]"
+          git tag "v$VERSION"
+          git push
+          git push --tags
+
+      - name: Install & Build
+        run: npm ci && npm run build
+
+      # Add your deploy step here (Vercel, Firebase Hosting, etc.)
+      # - name: Deploy to Vercel
+      #   run: npx vercel --prod --token=${{ secrets.VERCEL_TOKEN }}

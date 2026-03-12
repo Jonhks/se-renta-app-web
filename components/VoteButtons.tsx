@@ -144,9 +144,16 @@ export default function VoteButtons({
         updatedAt: new Date().toISOString(),
       });
 
-      // Incrementar nuevo contador
+      // Incrementar nuevo contador en el reporte
       await updateDoc(reportRef, {
         [mapVoteToField(type)]: increment(1),
+      });
+
+      // 🔥 Actualizar perfil del usuario (Contribuciones y Estrellas)
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        contributionsCount: increment(1),
+        reputationScore: increment(0.5),
       });
 
       toast.success("Voto registrado");

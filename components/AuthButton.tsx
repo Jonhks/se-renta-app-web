@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/AuthContext";
 import ConfirmDialog from "./ConfirmDialog";
 import { doc, onSnapshot } from "firebase/firestore";
 import { toast } from "react-toastify";
+import MobileUserMenu from "./MobileUserMenu";
 
 export default function AuthButton() {
   const { user, loading } = useAuth();
@@ -47,11 +48,6 @@ export default function AuthButton() {
     );
   }
 
-  // Consola de ayuda para entender el estado del usuario
-  if (user) {
-    // console.log("Usuario autenticado:", user);
-  }
-
   const handleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -72,7 +68,11 @@ export default function AuthButton() {
   if (user) {
     return (
       <>
-        <div className="flex items-center gap-4">
+        {/* ── Mobile: solo muestra foto → abre drawer ── */}
+        <MobileUserMenu />
+
+        {/* ── Desktop: layout completo ── */}
+        <div className="hidden md:flex items-center gap-4">
           {isAdmin && (
             <a
               href={pathname === "/admin" ? "/" : "/admin"}
@@ -81,6 +81,14 @@ export default function AuthButton() {
               {pathname === "/admin" ? "Mapa" : "Admin"}
             </a>
           )}
+          <a
+            href="https://se-renta-landing.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gray-500 hover:text-gray-800 transition-colors hidden lg:inline"
+          >
+            🌐 Landing
+          </a>
           {user.photoURL ? (
             <img
               src={user.photoURL}
@@ -118,7 +126,7 @@ export default function AuthButton() {
           </div>
           <button
             onClick={() => setOpenDialog(true)}
-            className="bg-black text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-gray-800 cursor-pointer text-sm font-medium hidden md:block"
+            className="bg-black text-white px-3 py-1.5 rounded-lg transition-colors hover:bg-gray-800 cursor-pointer text-sm font-medium"
           >
             Salir
           </button>

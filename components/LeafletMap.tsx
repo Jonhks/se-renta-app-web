@@ -179,24 +179,25 @@ export default function LeafletMap() {
     return () => unsubscribe();
   }, []);
 
-  // Helper para crear icono de casita SVG con color
-  const houseIcon = (color: string) =>
+  // Helper para crear icono de pin "Se Renta" con color
+  const seRentaPin = (color: string) =>
     L.divIcon({
-      html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" style="filter: drop-shadow(0 1px 3px rgba(0,0,0,.4))">
-        <path d="M16 3 L3 14 L7 14 L7 28 L25 28 L25 14 L29 14 Z" fill="${color}" stroke="white" stroke-width="1.5"/>
-        <rect x="13" y="18" width="6" height="10" rx="1" fill="white" opacity="0.85"/>
+      html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,.35))">
+        <path d="M32 2C20 2 10 12 10 24c0 14 22 38 22 38s22-24 22-38C54 12 44 2 32 2z" fill="${color}"/>
+        <circle cx="32" cy="24" r="14" fill="${color}"/>
+        <path d="M24 26 L32 20 L40 26 V36 H34 V30 H30 V36 H24 Z" fill="#fff"/>
       </svg>`,
       className: "",
-      iconSize: [28, 28],
-      iconAnchor: [14, 28],
-      popupAnchor: [0, -28],
+      iconSize: [32, 38],
+      iconAnchor: [16, 38],
+      popupAnchor: [0, -40],
     });
 
-  const BlackIcon = houseIcon("#111");
-  const GrayIcon = houseIcon("#6b7280");
-  const GreenIcon = houseIcon("#16a34a");
-  const YellowIcon = houseIcon("#eab308");
-  const RedIcon = houseIcon("#dc2626");
+  const BlackIcon = seRentaPin("#111");
+  const GrayIcon = seRentaPin("#6b7280");
+  const GreenIcon = seRentaPin("#16a34a");
+  const YellowIcon = seRentaPin("#eab308");
+  const RedIcon = seRentaPin("#dc2626");
 
   return (
     <div className="relative w-full h-full">
@@ -215,11 +216,30 @@ export default function LeafletMap() {
 
         {position && (
           <>
-            <Marker position={position} />
+            <Marker
+              position={position}
+              icon={L.divIcon({
+                html: `<div style="
+                  width:16px;height:16px;
+                  background:#2563eb;
+                  border:3px solid white;
+                  border-radius:50%;
+                  box-shadow:0 0 0 3px rgba(37,99,235,0.3);
+                "></div>`,
+                className: "",
+                iconSize: [16, 16],
+                iconAnchor: [8, 8],
+              })}
+            />
             <Circle
               center={position}
               radius={50}
-              pathOptions={{ color: "black", fillOpacity: 0.2 }}
+              pathOptions={{
+                color: "#2563eb",
+                fillColor: "#2563eb",
+                fillOpacity: 0.1,
+                weight: 1,
+              }}
             />
           </>
         )}
@@ -359,11 +379,24 @@ export default function LeafletMap() {
           setOpenModal={setOpenModal}
         />
       </MapContainer>
+      {/* Botón de ubicación — estilo Google Maps circular */}
       <button
         onClick={handleLocate}
-        className="fixed bottom-6 right-6 z-[5000] bg-black text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-800 transition-colors cursor-pointer"
+        title="Usar mi ubicación"
+        className="fixed bottom-6 right-6 z-[5000] w-12 h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
       >
-        📍 Usar mi ubicación
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="22"
+          height="22"
+          fill="none"
+        >
+          <path
+            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+            fill="#444"
+          />
+        </svg>
       </button>
       <CreateReportButton
         position={position}

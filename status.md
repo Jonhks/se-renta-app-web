@@ -26,7 +26,7 @@ Hoy el producto ya tiene:
 • ✅ Subcolección votes por reporte
 • ✅ Contadores sincronizados correctamente
 • ✅ Botón dominante visual
-• ✅ Pin dinámico según balance de votos
+• ✅ Pin dinámico según balance de votos (nuevo icono Se Renta)
 • ✅ Toast inteligente solo en eventos reales
 • ✅ Reglas de Firestore seguras
 • ✅ Custom Claims para admin real
@@ -35,6 +35,13 @@ Hoy el producto ya tiene:
 • ✅ Splash dark minimalista
 • ✅ FAB circular funcional
 • ✅ Panel Admin funcional con control reversible
+• ✅ Logo SeRentaIcon + SeRentaLogo (SVG propio, pin de gota con casita)
+• ✅ Fuente global Inter 600 — icono 36px, texto 20px
+• ✅ Menú mobile: drawer slide-left al tocar foto de usuario
+• ✅ Menú mobile incluye: Admin (si aplica), Ranking, Landing, Compartir, Logout
+• ✅ Botón ubicación estilo Google Maps (circular blanco con ícono)
+• ✅ photoURL guardada en Firestore al hacer login
+• ✅ Botón Compartir (Web Share API) — WhatsApp, Instagram, etc.
 
 Esto ya es un sistema comunitario vivo.
 
