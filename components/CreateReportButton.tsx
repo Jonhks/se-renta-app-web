@@ -19,7 +19,13 @@ export default function CreateReportButton({
 }) {
   const { user } = useAuth();
   const [status, setStatus] = useState<string>("active");
+  const [showTooltip, setShowTooltip] = useState(true);
   const hasLocation = !!position;
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTooltip(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -113,7 +119,7 @@ export default function CreateReportButton({
         >
           {label}
         </button>
-        {(isActive || isGuest) && (
+        {showTooltip && (isActive || isGuest) && (
           <div
             onClick={handleClick}
             className="relative bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-2xl cursor-pointer whitespace-nowrap animate-bounce select-none"
