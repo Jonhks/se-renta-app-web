@@ -42,6 +42,15 @@ export default function MobileUserMenu() {
     return () => unsubscribe();
   }, [user]);
 
+  // Lock scroll when menu is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+  }, [open]);
+
   const handleLogout = async () => {
     await signOut(auth);
     toast.info("Sesión cerrada");

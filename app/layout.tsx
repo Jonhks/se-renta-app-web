@@ -35,7 +35,7 @@ export default function RootLayout({
       lang="es"
       className={inter.variable}
     >
-      <body className="h-screen flex flex-col">
+      <body className="h-[100dvh] overflow-hidden flex flex-col">
         <ThemeProvider>
           <AuthProvider>
             <AppInitializer>
@@ -63,7 +63,7 @@ export default function RootLayout({
                 </div>
               </header>
 
-              <main className="flex-1">{children}</main>
+              <main className="flex-1 overflow-auto">{children}</main>
               <AppFooter />
             </AppInitializer>
           </AuthProvider>
