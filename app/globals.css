@@ -91,3 +91,11 @@ body {
   color: white !important;
   /* color: inherit !important; */
 }
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

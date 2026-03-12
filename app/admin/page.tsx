@@ -74,7 +74,7 @@ function NavCard({
   return (
     <button
       onClick={() => onClick(id)}
-      className={`flex-1 min-w-0 flex flex-col gap-1 px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
+      className={`flex-1 min-w-[140px] md:min-w-0 flex flex-col gap-1 px-4 py-3 rounded-xl border text-left transition-all cursor-pointer ${
         isActive
           ? "bg-white text-black border-white/20"
           : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
@@ -539,7 +539,7 @@ export default function AdminPage() {
       </div>
 
       {/* ── NAV CARDS ───────────────────────────────────── */}
-      <div className="flex gap-2 px-4 pt-4 pb-2 overflow-x-auto">
+      <div className="flex gap-2 px-4 pt-4 pb-2 overflow-x-auto no-scrollbar md:flex-wrap">
         <NavCard
           id="users"
           active={activeSection}
@@ -597,7 +597,7 @@ export default function AdminPage() {
         {activeSection === "users" && (
           <>
             {/* Stats strip */}
-            <div className="grid grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center">
               {[
                 { label: "Total", value: userStats.total, color: "text-white" },
                 {
@@ -653,13 +653,13 @@ export default function AdminPage() {
             )}
 
             {/* Search + filter */}
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
-                placeholder="Buscar usuario (nombre o email)..."
+                placeholder="Buscar usuario..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-white/30"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:border-white/30"
               />
               <select
                 value={userFilter}
@@ -724,13 +724,13 @@ export default function AdminPage() {
         {/* ══ REPORTES ══════════════════════════════════════ */}
         {activeSection === "reports" && (
           <>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Buscar reporte..."
                 value={reportSearch}
                 onChange={(e) => setReportSearch(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-white/30"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:border-white/30"
               />
               <select
                 value={reportFilter}
