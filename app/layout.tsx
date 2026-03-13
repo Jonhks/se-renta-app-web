@@ -10,6 +10,7 @@ import AppInitializer from "@/components/AppInitializer";
 import { SeRentaLogo } from "@/components/SeRentaIcon";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppFooter from "@/components/AppFooter";
+import BottomNav from "@/components/BottomNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -64,6 +65,7 @@ export default function RootLayout({
               </header>
 
               <main className="flex-1 overflow-auto">{children}</main>
+              <BottomNav />
               <AppFooter />
             </AppInitializer>
           </AuthProvider>

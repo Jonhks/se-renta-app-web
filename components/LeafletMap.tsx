@@ -18,6 +18,8 @@ import CreateReportModal from "./CreateReportModal";
 import VoteButtons from "./VoteButtons";
 import { toast } from "react-toastify";
 import { useAuth } from "@/lib/AuthContext";
+import { events } from "@/lib/events";
+import DirectionsModal from "./DirectionsModal";
 
 interface Report {
   id: string;
@@ -120,8 +122,26 @@ export default function LeafletMap() {
     Record<string, number>
   >({});
   const [editingReport, setEditingReport] = useState<Report | null>(null);
+  const [navTarget, setNavTarget] = useState<{ lat: number; lng: number } | null>(null);
 
   const { user } = useAuth();
+
+  useEffect(() => {
+    const handleLocateEvent = () => {
+      handleLocate();
+    };
+    const handleCreateEvent = () => {
+      setOpenModal(true);
+    };
+
+    events.on("locate", handleLocateEvent);
+    events.on("createReport", handleCreateEvent);
+
+    return () => {
+      events.off("locate", handleLocateEvent);
+      events.off("createReport", handleCreateEvent);
+    };
+  }, []);
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -346,6 +366,19 @@ export default function LeafletMap() {
                       </div>
                     )}
 
+                    <div className="flex flex-col gap-2 mt-2">
+                       <button
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           setNavTarget({ lat: report.location.lat, lng: report.location.lng });
+                         }}
+                         className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 transition-colors !text-white rounded-lg text-sm font-medium"
+                       >
+                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                         Cómo llegar
+                       </button>
+                    </div>
+
                     <div className="mt-3 flex flex-col gap-2">
                       <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-gray-400 font-bold border-b border-gray-100 pb-1 mb-1">
                         <span>Validación Comunitaria</span>
@@ -379,30 +412,12 @@ export default function LeafletMap() {
           setOpenModal={setOpenModal}
         />
       </MapContainer>
-      {/* Botón de ubicación — estilo Google Maps circular */}
-      <button
-        onClick={handleLocate}
-        title="Usar mi ubicación"
-        className="fixed bottom-6 right-6 z-[5000] w-12 h-12 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="22"
-          height="22"
-          fill="none"
-        >
-          <path
-            d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-            fill="#444"
-          />
-        </svg>
-      </button>
       <CreateReportButton
         position={position}
         setPosition={setPosition}
         setSelectingLocation={setSelectingLocation}
         setOpenModal={setOpenModal}
+        className="hidden md:flex" 
       />
       <CreateReportModal
         open={openModal}
@@ -420,6 +435,14 @@ export default function LeafletMap() {
         reportData={editingReport || undefined}
         reportId={editingReport?.id}
       />
+
+      <DirectionsModal
+        open={!!navTarget}
+        onClose={() => setNavTarget(null)}
+        lat={navTarget?.lat ?? 0}
+        lng={navTarget?.lng ?? 0}
+      />
+
       {selectingLocation && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[6000] bg-black text-white px-4 py-2 rounded-lg shadow-lg text-sm">
           Haz clic en el mapa para colocar el reporte

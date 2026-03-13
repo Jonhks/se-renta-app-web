@@ -11,11 +11,13 @@ export default function CreateReportButton({
   setPosition,
   setSelectingLocation,
   setOpenModal,
+  className,
 }: {
   position: [number, number] | null;
   setPosition: React.Dispatch<React.SetStateAction<[number, number] | null>>;
   setSelectingLocation: React.Dispatch<React.SetStateAction<boolean>>;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
+  className?: string;
 }) {
   const { user } = useAuth();
   const [status, setStatus] = useState<string>("active");
@@ -96,7 +98,7 @@ export default function CreateReportButton({
 
   return (
     <>
-      <div className="fixed bottom-6 left-6 z-[5000] flex items-center gap-4">
+      <div className={`fixed bottom-6 left-6 z-[5000] flex items-center gap-4 ${className || ""}`}>
         <button
           onClick={handleClick}
           className={`w-14 h-14 rounded-full flex shrink-0 items-center justify-center text-2xl shadow-lg transition-all cursor-pointer

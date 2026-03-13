@@ -68,8 +68,21 @@ export default function AuthButton() {
   if (user) {
     return (
       <>
-        {/* ── Mobile: solo muestra foto → abre drawer ── */}
-        <MobileUserMenu />
+        {/* ── Mobile: solo muestra foto → ya no abre drawer ── */}
+        <div className="md:hidden flex items-center justify-center focus:outline-none pr-2">
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="Avatar"
+              className="w-9 h-9 rounded-full border-2 border-zinc-200 dark:border-zinc-700 shadow-sm object-cover"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-9 h-9 rounded-full flex items-center justify-center text-base shadow-sm border border-zinc-200 dark:border-zinc-700 bg-gray-100 dark:bg-zinc-800">
+              👤
+            </div>
+          )}
+        </div>
 
         {/* ── Desktop: layout completo ── */}
         <div className="hidden md:flex items-center gap-4">
