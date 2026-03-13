@@ -19,10 +19,39 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Se Renta",
-  description: "Encuentra tu próximo hogar",
+  title: "Se Renta — Mapa Comunitario",
+  description: "Encuentra tu próximo hogar y reporta inmuebles disponibles en tu zona.",
+  manifest: "/manifest.json",
   icons: {
     icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
+  openGraph: {
+    title: "Se Renta",
+    description: "Mapa comunitario para encontrar rentas disponibles.",
+    url: "https://se-renta.vercel.app", // Asumiendo URL base
+    siteName: "Se Renta",
+    images: [
+      {
+        url: "/logo.svg",
+        width: 800,
+        height: 600,
+        alt: "Se Renta Logo",
+      },
+    ],
+    locale: "es_MX",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Se Renta",
+    description: "Mapa comunitario de inmuebles disponibles.",
+    images: ["/logo.svg"],
+  },
+  appleWebApp: {
+    title: "Se Renta",
+    statusBarStyle: "default",
+    capable: true,
   },
 };
 
