@@ -961,11 +961,11 @@ export default function AdminPage() {
       {/* ── USER DETAIL MODAL ─────────────────────────────── */}
       {selectedUser && (
         <div
-          className="fixed inset-0 z-[8000] bg-black/80 flex items-end sm:items-center justify-center p-4"
+          className="fixed inset-0 z-[9000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setSelectedUser(null)}
         >
           <div
-            className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+            className="bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden max-h-[85vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -1143,7 +1143,7 @@ export default function AdminPage() {
       {/* ── RULES MODAL ───────────────────────────────────── */}
       {showRules && (
         <div
-          className="fixed inset-0 z-[8000] bg-black/80 flex items-center justify-center p-4"
+          className="fixed inset-0 z-[9000] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm"
           onClick={() => setShowRules(false)}
         >
           <div
