@@ -16,11 +16,14 @@ export default function UpdateNotification() {
       if (snap.exists()) {
         const data = snap.data();
         const latest = data.version;
+        console.log("Check version:", { current: CURRENT_VERSION, latest });
         if (latest && latest !== CURRENT_VERSION) {
           console.log(`Update available: ${CURRENT_VERSION} -> ${latest}`);
           setNewVersion(latest);
           setShow(true);
         }
+      } else {
+        console.warn("UpdateNotification: metadata/app document not found");
       }
     });
 

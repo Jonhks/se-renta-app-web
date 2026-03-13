@@ -20,6 +20,7 @@ export default function BottomNav() {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [reputation, setReputation] = useState<number>(0);
   const [contributions, setContributions] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const isDark = theme === "dark";
 
@@ -33,6 +34,11 @@ export default function BottomNav() {
         setContributions(data.contributionsCount ?? 0);
       }
     });
+
+    user.getIdTokenResult().then((token) => {
+      setIsAdmin(token.claims.admin === true);
+    });
+
     return () => unsubscribe();
   }, [user]);
 
@@ -155,6 +161,17 @@ export default function BottomNav() {
                 <ShareButton 
                   className={`flex items-center gap-3 w-full p-4 rounded-xl transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 ${isDark ? "text-zinc-100" : "text-zinc-900"}`}
                 />
+
+                {isAdmin && (
+                  <a 
+                    href="/admin"
+                    onClick={() => setOpenSubmenu(false)}
+                    className="flex items-center gap-3 w-full p-4 rounded-xl transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 text-blue-500"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 1 1-2-3.46l.44-.25a2 2 0 0 1 2 0l.44.25a2 2 0 1 1-2 3.46l-.44-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-1.73-3.46l.43-.25a2 2 0 0 1 1-1.73V4a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-1.73-3.46l.43-.25a2 2 0 0 1 1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+                    <span className="font-bold flex-1 text-left">Panel Admin</span>
+                  </a>
+                )}
 
                 <button 
                   onClick={() => { setConfirmLogout(true); setOpenSubmenu(false); }}
