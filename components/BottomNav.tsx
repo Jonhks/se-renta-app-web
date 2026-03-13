@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 // No external icon library needed, using inline SVGs
 import { useAuth } from "@/lib/AuthContext";
@@ -14,6 +16,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import ShareButton from "./ShareButton";
 
 export default function BottomNav() {
+  const pathname = usePathname();
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [openSubmenu, setOpenSubmenu] = useState(false);
@@ -163,14 +166,16 @@ export default function BottomNav() {
                 />
 
                 {isAdmin && (
-                  <a 
-                    href="/admin"
+                  <Link 
+                    href={pathname === "/admin" ? "/" : "/admin"}
                     onClick={() => setOpenSubmenu(false)}
                     className="flex items-center gap-3 w-full p-4 rounded-xl transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 text-blue-500"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 1 1-2-3.46l.44-.25a2 2 0 0 1 2 0l.44.25a2 2 0 1 1-2 3.46l-.44-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-1.73-3.46l.43-.25a2 2 0 0 1 1-1.73V4a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-1.73-3.46l.43-.25a2 2 0 0 1 1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
-                    <span className="font-bold flex-1 text-left">Panel Admin</span>
-                  </a>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 1 1-2-3.46l.44-.25a2 2 0 0 1 2 0l.44.25a2 2 0 1 1-2 3.46l-.44-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 1 1-1.73-3.46l.43-.25a2 2 0 0 1 1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/></svg>
+                    <span className="font-bold flex-1 text-left">
+                      {pathname === "/admin" ? "Ir al Mapa" : "Panel Admin"}
+                    </span>
+                  </Link>
                 )}
 
                 <button 

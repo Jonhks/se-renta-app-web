@@ -11,6 +11,7 @@ import { SeRentaLogo } from "@/components/SeRentaIcon";
 import ThemeToggle from "@/components/ThemeToggle";
 import AppFooter from "@/components/AppFooter";
 import BottomNav from "@/components/BottomNav";
+import Link from "next/link";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,12 +81,12 @@ export default function RootLayout({
                   borderColor: "var(--header-border)",
                 }}
               >
-                <a
+                <Link
                   href="/"
                   className="se-renta-logo-wrapper"
                 >
                   <SeRentaLogo size={36} />
-                </a>
+                </Link>
                 <div className="flex items-center gap-3">
                   {/* Toggle visible en desktop */}
                   <ThemeToggle className="hidden md:flex" />

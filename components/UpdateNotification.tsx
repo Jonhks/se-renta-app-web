@@ -9,21 +9,25 @@ const CURRENT_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0";
 export default function UpdateNotification() {
   const [show, setShow] = useState(false);
   const [newVersion, setNewVersion] = useState("");
-
   useEffect(() => {
-    // Escuchar cambios en la versión "oficial" en Firestore
     const unsub = onSnapshot(doc(db, "metadata", "app"), (snap) => {
+      console.log("UpdateNotification: Snapshot received");
       if (snap.exists()) {
         const data = snap.data();
-        const latest = data.version;
-        console.log("Check version:", { current: CURRENT_VERSION, latest });
-        if (latest && latest !== CURRENT_VERSION) {
-          console.log(`Update available: ${CURRENT_VERSION} -> ${latest}`);
+        const latest = data.version?.toString().trim();
+        const current = CURRENT_VERSION.trim();
+        
+        console.log("UpdateNotification: Version check", { current, latest });
+        
+        if (latest && latest !== current) {
+          console.warn(`UpdateNotification: Update available! ${current} -> ${latest}`);
           setNewVersion(latest);
           setShow(true);
+        } else {
+          console.log("UpdateNotification: App is up to date");
         }
       } else {
-        console.warn("UpdateNotification: metadata/app document not found");
+        console.error("UpdateNotification Error: Document 'metadata/app' not found");
       }
     });
 
