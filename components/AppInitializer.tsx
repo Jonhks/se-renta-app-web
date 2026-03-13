@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/lib/AuthContext";
 import SplashScreen from "./SplashScreen";
+import UpdateNotification from "./UpdateNotification";
 
 export default function AppInitializer({
   children,
@@ -14,5 +15,10 @@ export default function AppInitializer({
     return <SplashScreen />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <UpdateNotification />
+      {children}
+    </>
+  );
 }
